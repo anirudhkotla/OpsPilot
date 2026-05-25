@@ -1,62 +1,69 @@
 # System Architecture - OpsPilot
 
-## 1. Tech Stack
-- **Frontend**: Next.js 14+ (App Router), React, TypeScript.
-- **Styling**: Tailwind CSS for utility-first responsive design.
-- **Authentication**: JWT (JSON Web Tokens) stored in secure cookies or local storage.
-- **Backend**: Next.js API Routes (Edge/Node.js runtime).
-- **API Style**: RESTful JSON APIs.
-- **Validation**: Zod for schema validation (client and server side).
+## 1. Technology Stack
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **State Management:** React Context / Hooks
+- **Authentication:** JWT (JSON Web Tokens)
+- **API:** Next.js Route Handlers (RESTful)
+- **Components:** Headless UI / Radix UI (via Tailwind)
 
-## 2. Directory Structure
-The project follows a modular architecture to ensure scalability and separation of concerns:
+## 2. High-Level Architecture
+OpsPilot follows a modern Full-Stack Next.js architecture where the frontend and backend are integrated within the same deployment unit.
 
+### 2.1 Frontend (Client-Side)
+- **React Server Components (RSC):** Used for data fetching and static layouts to improve performance.
+- **Client Components:** Used for interactive elements like forms, modals, and real-time notifications.
+- **Layouts:** Persistent navigation and sidebar across the dashboard.
+
+### 2.2 Backend (Server-Side)
+- **API Routes:** Located in `src/app/api/`, handling business logic and data persistence.
+- **Middleware:** `middleware.ts` handles route protection and JWT verification.
+- **Services/Modules:** Logic encapsulated in `src/modules/` for reusability.
+
+## 3. Data Flow
+1. **User Action:** User interacts with a Client Component (e.g., submitting a request).
+2. **API Call:** Client sends a request to a Next.js Route Handler with a JWT in the header/cookie.
+3. **Validation:** Middleware/Route Handler validates the JWT and checks user permissions.
+4. **Processing:** The `module` logic processes the request (e.g., updating a database).
+5. **Response:** API returns JSON data to the client.
+6. **UI Update:** React updates the UI state based on the response.
+
+## 4. Directory Structure
 ```text
 src/
-  app/
-    (auth)/           # Authentication routes (login, register)
-    dashboard/        # Main overview and metrics
-    employees/        # Employee directory and profile management
-    projects/         # Project and team management
-    requests/         # Internal request system
-    admin/            # Admin settings and audit logs
-    api/              # REST API Endpoints
-      auth/           # JWT issuance and verification
-      employees/      # Employee CRUD
-      projects/       # Project/Task CRUD
-      requests/       # Request/Approval logic
-  components/
-    ui/               # Atomic UI components (Button, Input, Modal)
-    layout/           # Shared layouts (Sidebar, Navbar, Footer)
-    forms/            # Reusable form logic and components
-    tables/           # Data tables with sorting/filtering
-  modules/            # Business logic and domain-specific state
-    auth/             # Auth providers and logic
-    employees/        # Employee-specific hooks and helpers
-    projects/         # Project-specific logic
-    requests/         # Workflow and approval logic
-    notifications/    # Notification state management
-    audit/            # Audit log formatting and logic
-  lib/                # Shared utilities and configuration
-    api/              # API client (fetch wrappers)
-    auth/             # JWT and session helpers
-    validation/       # Zod schemas for data integrity
-    permissions/      # RBAC (Role-Based Access Control) logic
-    hooks/            # Global custom React hooks
-    types/            # Global TypeScript interfaces/types
-  middleware.ts       # Route protection and auth verification
-tests/                # Unit, integration, and E2E tests
+├── app/                    # Next.js App Router
+│   ├── (auth)/             # Authentication routes
+│   ├── dashboard/          # Main dashboard view
+│   ├── employees/          # Employee directory pages
+│   ├── projects/           # Project management pages
+│   ├── requests/           # Internal request system
+│   ├── admin/              # Admin settings and audit logs
+│   └── api/                # REST API Route Handlers
+├── components/             # Shared UI components
+│   ├── ui/                 # Base components (buttons, inputs)
+│   ├── layout/             # Sidebar, Header, Footer
+│   ├── forms/              # Reusable form logic
+│   └── tables/             # Data tables with sorting/filtering
+├── modules/                # Business logic by feature
+│   ├── auth/               # JWT logic, login/logout
+│   ├── employees/          # Directory logic
+│   ├── projects/           # Project/Team logic
+│   ├── requests/           # Workflow/Approval logic
+│   ├── notifications/      # Alerting system
+│   └── audit/              # Logging logic
+├── lib/                    # Shared utilities
+│   ├── api/                # Fetch wrappers
+│   ├── auth/               # Token helpers
+│   ├── validation/         # Zod schemas
+│   ├── permissions/        # RBAC helpers
+│   └── hooks/              # Custom React hooks
+├── types/                  # TypeScript interfaces
+└── middleware.ts           # Route protection
 ```
 
-## 3. Data Flow & Integration
-1. **Client Interaction**: Users interact with React components in the `app/` directory.
-2. **State & Logic**: Components use hooks from `modules/` or `lib/hooks/` to manage local state and trigger actions.
-3. **API Requests**: Data fetching is handled by `lib/api/` which calls the `app/api/` routes.
-4. **Middleware**: The `middleware.ts` intercepts requests to ensure the user has a valid JWT for protected routes.
-5. **Server Processing**: API routes validate input using `lib/validation/`, check permissions via `lib/permissions/`, and interact with the data layer.
-6. **Response**: JSON responses are returned to the client, updating the UI accordingly.
-
-## 4. Security Architecture
-- **JWT**: Tokens contain user ID and role, signed with a server-side secret.
-- **RBAC**: A centralized permission utility determines if a user can perform an action based on their role.
-- **Input Sanitization**: All API inputs are validated against Zod schemas to prevent injection and malformed data.
+## 5. Security Model
+- **Authentication:** JWT stored in `HttpOnly` cookies to prevent XSS.
+- **Authorization:** Server-side checks in API routes and Middleware based on user roles.
+- **Input Validation:** Strict schema validation using Zod on both client and server.
